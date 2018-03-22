@@ -1,0 +1,135 @@
+Info about simulavr simulator
+  - public domain atmega cycle true instruction set simulator
+  - some documentation http://reprap.org/wiki/SimulAVR
+  - allows to simulate the atmega328 processor which is used on the Arduino uno
+    - use info on web for programming examples of the arduino, 
+      e.g. setting output pins, use of serial library
+    - documentation atmega328 processor in $ cd /home/rttools/cprog/rts_avr/simulavr/examples/Blink/doc
+  - simultator does not only include the core but also peripherals, 
+    e.g. timers, ADCs
+    - some peripherals are not implemented, e.g. watchdog timer 
+  - atmega328 has only 32Kbyte program memory and 2K data memory
+    - changed it to 64 Kbyte and 4k data memory in the simulator in atmega668base.h file
+    - usefull to run code compiled with optimization level O0 instead of Os. 
+      We use O0 to simplify WCET program analysis 
+  - debugging with gdb is supported (gdb is connected simulator)
+    - in one xterm start:
+      $ cd /home/rttools/cprog/rts_avr/simulavr/examples/Blink
+      $ . profile %sets ld_library_path 
+      $ ../../src/simulavr -g -v -F16000000 -d atmega328 -c vcd:tracein.txt:trace.vcd -f Blink.elf
+    - in other xterm start: $ avr-gdb -p 1212
+    - follow other instructions on the webpage http://reprap.org/wiki/SimulAVR
+    - use of debugger is not required for the exercises
+
+Compilation to create the elf file for the simulavr
+- uses the gcc/g++ cross-compiler toolchain for Atmel cores
+- code is compile using a Makefile
+- program file must end with .ino e.g. Blink.ino
+- $ cd /home/rttools/cprog/rts_avr/ArduinoMake/Arduino-Makefile-master/examples/Blink
+- $ gedit Blink.ino
+- $ . profile
+- $ make clean; make
+- $ cd /home/rttools/cprog/rts_avr/ArduinoMake/Arduino-Makefile-master/examples/Blink/build-uno
+- $ ls %Blink.elf should be listed 
+- $ avr-nm Blink.elf %lists all function names/code-segments in elf file
+- $ cd /home/rttools/cprog/rts_avr/simulavr/examples/Blink
+- $ . profile
+- $ ./run_simulavr.sh
+- $ gtkwave trace.vcd %observe switching signal on port B, and measure on-time
+- tracein.txt contains the signals that can be viewed with the gtkwave viewer
+- tracelist.txt contains all signals that can be traced
+ 
+FreeRTOS:
+- See http://www.freertos.org/ for info
+- manual in /home/rttools/cprog/rts_avr/ArduinoMake/Arduino-Makefile-master/examples/Taskswitching/doc/FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide.pdf
+- RTOS which supports many types of cores
+- contains functionality for task creation, preemptive task scheduling and communication between tasks
+- runs on atmega328 but only for small examples due to small instruction memory
+  - for this reason the memory size in simulavr have been doubled
+- some changes in the Freertos where made to be able to run it on simulavr
+  - simulavr does not contain a watchdog timer therefore timer1 is used instead
+  - modification has been made in /home/rttools/cprog/rts_avr/arduino-1.6.13/Arduino_FreeRTOS-master_arduinoSim/src/port.c
+    - interupt/task-switch frequency can be adapted in port.c file
+
+Exercise Taskswitching using FreeRTOS
+- create an additional task, task2, with a lower priority and longer period than task1
+- establish functionally deterministic communication from task2 to task1 and from task 1 to task 2 using FreeRTOS functions
+- $ cd /home/rttools/cprog/rts_avr/ArduinoMake/Arduino-Makefile-master/examples/Taskswitching
+- $ gedit Taskswitching.ino %make necessary modifications
+- $ . profile
+- $ make
+- verify the result using simulavr
+- $ cd /home/rttools/cprog/rts_avr/simulavr/examples/Taskswitching
+- $ . profile
+- $ ./run_simulavr.sh
+- $ gtkwave trace.vcd
+
+
+Boundt WCET analysis tool /home/rttools/cprog/rts_avr/boundt
+- open source tool
+- http://www.bound-t.com/
+- manuals in /home/rttools/cprog/rts_avr/boundt/doc 
+
+Exercise WCETanalysis1
+- $ cd /home/rttools/cprog/rts_avr/ArduinoMake/Arduino-Makefile-master/examples/WCETanalysis1
+- $ . profile
+- $ make clean; make
+- $ cd /home/rttools/cprog/rts_avr/boundt/experiments/WCETanalysis1
+- $ . profile
+- $ ./make_graphs.sh %adapt assertions.txt to obtain WCET, be aware of small mistakes in names of functions and loops
+- $ okular graph.pdf
+- $ find way to verify WCET result with the avr-simulator: 
+    - is the compute WCET pessimistic
+    - how large is the difference between computed and simulated result?
+    - $ cd /home/rttools/cprog/rts_avr/simulavr/examples/WCETanalysis1
+    - $ . profile
+    - $ ./run_simulavr.sh
+    - $ gtkwave trace.vcd
+
+Exercise WCETanalysis2
+- $ cd /home/rttools/cprog/rts_avr/ArduinoMake/Arduino-Makefile-master/examples/WCETanalysis2
+- $ . profile
+- $ make clean; make
+- $ cd /home/rttools/cprog/rts_avr/boundt/experiments/WCETanalysis2
+- $ . profile
+- $ ./make_graphs.sh %adapt assertions.txt to obtain WCET
+- $ okular graph.pdf
+- $ find way to verify WCET result with simulator: 
+    - is the compute WCET pessimistic
+    - how large is the difference between computed and simulated result?
+    - $ cd /home/rttools/cprog/rts_avr/simulavr/examples/WCETanalysis1
+    - $ . profile
+    - $ ./run_simulavr.sh
+    - $ gtkwave trace.vcd
+
+
+Exercise dual core ARM7:
+- make a circular buffer communication library for communication between three tasks on different ARM cores. One task writes, the other two task read. Written data is sequence <1,2,3,4,...>. Read sequence by one task is <1,3,5,...>, the other task is <2,4,6,...>. Numbers skipped are not read by the respective task. Print the read result on other core. 
+- each ARM core runs its own TDMA-scheduler
+- atomic read-modify-write operations are not supported by the memory system
+- caches are disabled
+- $ cd /home/rttools/cprog/rts/apps/examples/prod_cons/arm
+- $ . profile
+- $ make clean; make
+- $ ./swarm test1 %starts dual core instruction set simulator. One core runs main other runs main2(). Memory is shared between both cores. Printf goes to UART. No debugger available. Writing to debug address ptr=0x900000 prints the written value 
+- kernel is in /home/rttools/cprog/rts/tools/arm_os/stable/kernellib
+- additions should be made in the file /home/rttools/cprog/rts/tools/arm_os/stable/kernellib/api.c and /home/rttools/cprog/rts/tools/arm_os/stable/kernellib/api.h
+- preemptive task switching is implemented in IRQS routine in /home/rttools/cprog/rts/tools/arm_os/stable/libc/vector.S
+
+
+Exercises with HAPI DF simulator
+- The HAPI simulator is on the same virtual machine as the ARM simulator
+- The documentation of the HAPI simulator can be found in: $cd /home/rttools/omphale_tools/progs/HapiLight/doc
+- Usage of the simulator can be found in: hapi_user_guide.pdf and the examples, the code of HAPI is in $cd /home/rttools/omphale_tools/progs/HapiLight
+
+HAPI exercise 1
+- Consider a single processor system with two periodic task \tau_1 and \tau_2 with computation time C_1=2, and period P_1=5 and C_2=4, P_2=9 scheduled by a fixed priority preemptive scheduler according to the rate-monotonic rule
+  - verify the feasibility of this task set in 3 different ways. Is this task set feasible?
+  - verify the results with HAPI by adapting the rma1.cc file, include code and simulation traces in report
+  - change the computation time of C_1 into 2.5 Is the task set still feasible, is this confirmed by simulation? In case it is not confirmed by HAPI simulation then why not?
+
+
+
+Report describing the results of the exercises:
+- Small report ($<15$ pages) describing the implementations, and the evaluation results of the implementations.
+- Hand-in date: before 1 week after the written examination.
