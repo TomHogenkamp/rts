@@ -17,12 +17,12 @@ void loop()
 
 /* Task2 with priority 1 */
 static void MyTask2(void* pvParameters)
-{ 
+{
+  int x2; 
+    
   uint32_t dataToSend = 0;
   uint32_t dataToReceive;
     
-    
-  int c=0;
   while(1)
   { 
       
@@ -34,7 +34,7 @@ static void MyTask2(void* pvParameters)
       PORTC = (dataToSend<<4) | PORTC; //Store dataToSend in 4 MSB of PORTC 
     } 
     
-    if(xQueueReceive(queueHandleT1toT2, &dataToReceive, 0)){
+    if(xQueueReceive(queueHandleT1toT2, &dataToReceive, 100 )){
       PORTC = PORTC & 0xF0; //Clear the 4 LSB of PORTC  
       PORTC = dataToReceive | PORTC; //Store dataToReceive in 4 LSB of PORTC     
     } 
@@ -43,11 +43,11 @@ static void MyTask2(void* pvParameters)
       
     //Serial.print(F("Task2"));
     //vTaskDelay(100/portTICK_PERIOD_MS);
-    //PORTC = PORTC ^ 0x01;
-    //for(x2=0;x2<30000; x2++){}   
-    //PORTC = PORTC ^ 0x01;
+    PORTD = PORTD ^ 0x01;
+    for(x2=0;x2<30000; x2++){}   
+    PORTD = PORTD ^ 0x01;
     
-    vTaskDelay(10);
+    vTaskDelay(2);
   }
 }
 
@@ -55,7 +55,7 @@ static void MyTask2(void* pvParameters)
 /* Task1 with priority 2 */
 static void MyTask1(void* pvParameters)
 { 
-  int c=0;
+  int x2;
   
   uint32_t dataToSend = 0;
   uint32_t dataToReceive;
@@ -65,7 +65,7 @@ static void MyTask1(void* pvParameters)
     //PORTB:
     //4 MSB: Data received in Task1 from Task2
     //4 LSB: Data send from Task1 to Task2  
-    if(xQueueReceive(queueHandleT2toT1, &dataToReceive, 0)){
+    if(xQueueReceive(queueHandleT2toT1, &dataToReceive, 100)){
       PORTB = PORTB & 0x0F; //Clear the 4 MSB of PORTB  
       PORTB = (dataToReceive<<4) | PORTB; //Store dataToReceive in 4 MSB of PORTB       
     } 
@@ -79,20 +79,24 @@ static void MyTask1(void* pvParameters)
       
     //printk( "TASK1 %d\n",c++ );
     //Serial.println(F("Task1"));
-    //PORTB = PORTB ^ 0x01;
-    //for(x2=0;x2<30000; x2++){}   
-    //PORTB = PORTB ^ 0x01;
+    PORTD = PORTD ^ 0x04;
+    for(x2=0;x2<10000; x2++){}   
+    PORTD = PORTD ^ 0x04;
     
-    vTaskDelay(5);
+    vTaskDelay(2);
   }
 }
 
 /* Idle Task with priority Zero */ 
 static void MyIdleTask(void* pvParameters)
 { 
+  int x2;  
+    
   while(1){ 
+    PORTD = PORTD ^ 8;
     delay(5);
     //Serial.println(F("TASK0"));
+    PORTD = PORTD ^ 8;
   }
 }
 
@@ -108,8 +112,8 @@ void setup()
   queueHandleT1toT2 = xQueueCreate(5, sizeof(int));
  
   xTaskCreate(MyIdleTask, "IdleTask", 256, NULL, 0, NULL); 
-  xTaskCreate(MyTask1, "Task1", 256, NULL, 1, NULL);
-  xTaskCreate(MyTask2, "Task2", 256, NULL, 2, NULL );
+  xTaskCreate(MyTask1, "Task1", 256, NULL, 2, NULL);
+  xTaskCreate(MyTask2, "Task2", 256, NULL, 1, NULL );
   //vTaskStartScheduler();
   xPortStartScheduler();
 }
