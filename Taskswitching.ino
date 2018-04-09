@@ -20,11 +20,14 @@ static void MyTask2(void* pvParameters)
 {
   int x2; 
     
-  uint32_t dataToSend = 0;
+  uint32_t dataToSend = 4;
   uint32_t dataToReceive;
     
   while(1)
   { 
+    PORTD = PORTD ^ 0x01;
+    for(x2=0;x2<1000; x2++){}   
+    PORTD = PORTD ^ 0x01;  
       
     //PORTC:
     //4 MSB: Data send from Task2 to Task1
@@ -62,6 +65,10 @@ static void MyTask1(void* pvParameters)
   
   while(1)
   { 
+    PORTD = PORTD ^ 0x04;
+    for(x2=0;x2<1000; x2++){}   
+    PORTD = PORTD ^ 0x04;  
+      
     //PORTB:
     //4 MSB: Data received in Task1 from Task2
     //4 LSB: Data send from Task1 to Task2  
@@ -82,8 +89,6 @@ static void MyTask1(void* pvParameters)
     PORTD = PORTD ^ 0x04;
     for(x2=0;x2<10000; x2++){}   
     PORTD = PORTD ^ 0x04;
-    
-    vTaskDelay(2);
   }
 }
 
