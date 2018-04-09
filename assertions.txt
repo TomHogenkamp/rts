@@ -1,0 +1,11 @@
+subprogram "loop"
+ loop repeats 50 times; end loop;
+end "loop";
+
+--subprogram "_Z1gi"
+--  call to "_Z1ki" repeats 1 times; end call;
+--end "_Z1gi";
+
+--subprogram "_Z1ki"
+--  time 0 cycles; -- this time is irrelevant
+--end "_Z1ki";
