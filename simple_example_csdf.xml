@@ -1,0 +1,99 @@
+<!DOCTYPE csdfgraph SYSTEM "input.dtd">
+<csdfgraph mcm="12">
+
+<actor id="A0" unroll_factor="1">
+<executionphase et="3"/>
+</actor>
+
+<actor id="A1" unroll_factor="1">
+<executionphase et="1"/>
+</actor>
+
+<actor id="A2" unroll_factor="1">
+<executionphase et="1"/>
+</actor>
+
+<!-- self edges -->
+<edge max_number_of_tokens="1" token_size="1">
+<source id="A0">
+<transferphase rate="1"/>
+</source>
+<destination id="A0">
+<transferphase rate="1"/>
+</destination>
+</edge>
+
+<edge max_number_of_tokens="1" token_size="1">
+<source id="A1">
+<transferphase rate="1"/>
+</source>
+<destination id="A1">
+<transferphase rate="1"/>
+</destination>
+</edge>
+
+<edge max_number_of_tokens="1" token_size="1">
+<source id="A2">
+<transferphase rate="1"/>
+</source>
+<destination id="A2">
+<transferphase rate="1"/>
+</destination>
+</edge>
+<!-- end of self edges -->
+
+<edge max_number_of_tokens="1" token_size="0" models="A0A1">
+<source id="A0">
+<transferphase rate="1"/>
+</source>
+<destination id="A1">
+<transferphase rate="1"/>
+</destination>
+</edge>
+
+<edge max_number_of_tokens="2" token_size="2" models="A1A0">
+<source id="A1">
+<transferphase rate="1"/>
+</source>
+<destination id="A0">
+<transferphase rate="1"/>
+</destination>
+</edge>
+
+<edge max_number_of_tokens="1" token_size="0" models="A0A2">
+<source id="A0">
+<transferphase rate="1"/>
+</source>
+<destination id="A2">
+<transferphase rate="1"/>
+</destination>
+</edge>
+
+<edge max_number_of_tokens="2" token_size="2" models="A2A0">
+<source id="A2">
+<transferphase rate="1"/>
+</source>
+<destination id="A0">
+<transferphase rate="1"/>
+</destination>
+</edge>
+
+<edge max_number_of_tokens="1" token_size="0" models="A2A1">
+<source id="A2">
+<transferphase rate="1"/>
+</source>
+<destination id="A1">
+<transferphase rate="1"/>
+</destination>
+</edge>
+
+<edge max_number_of_tokens="3" token_size="3" models="A2A0">
+<source id="A2">
+<transferphase rate="1"/>
+</source>
+<destination id="A0">
+<transferphase rate="1"/>
+</destination>
+</edge>
+
+</csdfgraph>
